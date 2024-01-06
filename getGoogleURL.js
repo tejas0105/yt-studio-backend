@@ -7,7 +7,11 @@ function getGoogleOAuthURL() {
     access_type: "offline",
     response_type: "code",
     prompt: "consent",
-    scope: ["https://www.googleapis.com/auth/youtube.readonly"].join(" "),
+    scope: [
+      "https://www.googleapis.com/auth/youtube.readonly",
+      "openid",
+      "https://www.googleapis.com/auth/userinfo.profile",
+    ].join(" "),
   };
   console.log({ options });
   const qs = new URLSearchParams(options);

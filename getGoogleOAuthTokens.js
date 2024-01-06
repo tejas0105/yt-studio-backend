@@ -17,6 +17,7 @@ const getGoogleOAuthTokens = async (code) => {
         "Content-type": "application/x-www-form-urlencoded",
       },
     });
+    console.log(res.data);
     return res.data;
   } catch (error) {
     console.log(error.message);

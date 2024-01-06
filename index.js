@@ -18,9 +18,13 @@ app.get("/request", async (req, res) => {
 
 app.get("/oauth", async (req, res) => {
   const code = req.query.code;
-  const { access_token } = await getGoogleOAuthTokens(code);
+  const { access_token, expires_in, refresh_token } =
+    await getGoogleOAuthTokens(code);
   res.cookie("token", access_token, {
-    expires: new Date(Date.now() + 3600000),
+    expires: new Date(Date.now() + expires_in * 1000),
+  });
+  res.cookie("refresh_token", refresh_token, {
+    expires: new Date(Date.now() + 3.156e10),
   });
   //   console.log(data);
   res.redirect("http://localhost:5173/dashboard");
