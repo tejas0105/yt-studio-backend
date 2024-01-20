@@ -11,6 +11,7 @@ function getGoogleOAuthURL() {
       "https://www.googleapis.com/auth/youtube.readonly",
       "openid",
       "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/youtube.force-ssl",
     ].join(" "),
   };
   console.log({ options });
