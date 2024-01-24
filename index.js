@@ -2,6 +2,20 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const multer = require("multer");
+const uuid = require("uuid");
+
+const storage = multer.diskStorage({
+  destination: "/",
+  filename(req, file, cb) {
+    const newFileName = `${uuid()}-${file.originalname}`;
+    cb(null, newFileName);
+  },
+});
+
+const uploadFile = multer({
+  storage: storage,
+}).single("videofile");
 
 const getGoogleOAuthURL = require("./getGoogleURL");
 const getGoogleOAuthTokens = require("./getGoogleOAuthTokens");
