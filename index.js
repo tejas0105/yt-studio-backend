@@ -7,6 +7,7 @@ const fs = require("fs");
 const youtube = require("youtube-api");
 const path = require("path");
 const { google } = require("googleapis");
+const { file } = require("googleapis/build/src/apis/file");
 
 const app = express();
 app.use(express.json());
@@ -20,12 +21,6 @@ const oauth2Client = new google.auth.OAuth2(
   process.env.REDIRECT_URI
 );
 
-// oauth2Client.setCredentials({
-//   access_token:
-//     "ya29.a0AfB_byBP2-xGENzt6ofVTG7-n8iTG7J42Imo1h1ykC9SGtii3WQ0d_VxGOtI5TerwFV84NElYadNVelI5YYb6f8cwVTEQ1v1jIjJj4wHqvCd3S_se9MSGgAY1ELFPvtB837ZllcuLIVsvV8lkDUc1JtP030mXDElaqb_aCgYKAQQSARESFQHGX2MisDfum_2krfOPEFfoTqbL-A0171",
-// });
-// console.log(oauth2Client);
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     return cb(null, "./uploads");
@@ -34,10 +29,6 @@ const storage = multer.diskStorage({
     return cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
-
-const uploadFile = multer({
-  storage: storage,
-}).single("file");
 
 const scopes = [
   "https://www.googleapis.com/auth/youtube.readonly",
@@ -48,6 +39,10 @@ const scopes = [
   "https://www.googleapis.com/auth/youtube",
   "https://www.googleapis.com/auth/youtubepartner",
 ];
+
+const uploadFile = multer({
+  storage: storage,
+});
 
 app.get("/request", async (req, res) => {
   const url = oauth2Client.generateAuthUrl({
@@ -71,54 +66,85 @@ app.get("/oauth", async (req, res) => {
   res.redirect("http://localhost:5173/dashboard");
 });
 
-app.post("/upload", uploadFile, async (req, res) => {
-  const service = google.youtube({ version: "v3" });
-  const fileName = req.file.filename;
-  console.log(fileName);
-  console.log(req.body.access_token);
+app.post(
+  "/upload",
+  uploadFile.fields([{ name: "videoFile" }, { name: "imgFile" }]),
+  async (req, res) => {
+    const service = google.youtube({ version: "v3" });
+    console.log(req.file);
+    // console.log(req.body.access_token);
 
-  const oauth2Client = new google.auth.OAuth2(
-    process.env.CLIENT_ID,
-    process.env.CLIENT_SECRET,
-    process.env.REDIRECT_URI
-  );
+    // const oauth2Client = new google.auth.OAuth2(
+    //   process.env.CLIENT_ID,
+    //   process.env.CLIENT_SECRET,
+    //   process.env.REDIRECT_URI
+    // );
 
-  oauth2Client.setCredentials({
-    access_token: `${req.body.access_token}`,
-  });
-  console.log(oauth2Client);
+    // oauth2Client.setCredentials({
+    //   access_token: `${req.body.access_token}`,
+    // });
+    // console.log(oauth2Client);
+    if (file) {
+      try {
+        // const resp = await service.videos.insert(
+        //   {
+        //     auth: oauth2Client,
+        //     part: "id,snippet,status",
+        //     notifySubscribers: false,
+        //     requestBody: {
+        //       snippet: {
+        //         title: `${req.body.title}`,
+        //         description: `${req.body.description}`,
+        //       },
+        //       status: {
+        //         privacyStatus: "private",
+        //       },
+        //     },
+        //     media: {
+        //       body: fs.createReadStream(`./uploads/${fileName}`),
+        //     },
+        //   },
+        //   function (err, response) {
+        //     if (err) {
+        //       console.log("The API returned an error: " + err);
+        //       return;
+        //     }
+        //     console.log(response.data);
+        //     console.log("Video uploaded. Uploading the thumbnail now.");
+        //     service.thumbnails.set({
+        //       auth: oauth2Client,
+        //       videoId: resp?.data?.id,
+        //       media: {
+        //         body: fs.createReadStream(thumbFilePath),
+        //       },
+        //     });
+        //   }
+        // );
+        // console.log("resp->", Object.keys(resp));
+        // console.log(auth);
 
-  try {
-    const resp = await service.videos.insert({
-      auth: oauth2Client,
-      part: "id,snippet,status",
-      notifySubscribers: false,
-      requestBody: {
-        snippet: {
-          title: `${req.body.title}`,
-          description: `${req.body.description}`,
-        },
-        status: {
-          privacyStatus: "private",
-        },
-      },
-      media: {
-        body: fs.createReadStream(`./uploads/${fileName}`),
-      },
-    });
-    // console.log("resp->", Object.keys(resp));
-    // console.log(auth);
-    return res.status(resp.status).json({
-      status: "success",
-      message: "Video successfully uploaded to YouTube",
-    });
-  } catch (error) {
-    console.log(error.message);
-    return res
-      .status(400)
-      .json({ status: "failed", message: "something went wrong" });
+        // setTimeout(() => {
+        //   fs.unlink(`./uploads/${fileName}`, (err) => {
+        //     if (err) throw new Error("something wasn't right");
+        //     console.log("File deleted successfully");
+        //   });
+        // }, 3000);
+
+        return res.status(200).json({
+          status: "success",
+          message: "Video successfully uploaded to YouTube",
+        });
+      } catch (error) {
+        console.log(error.message);
+        return res
+          .status(400)
+          .json({ status: "failed", message: "something went wrong" });
+      }
+    } else {
+      console.log("File not found");
+    }
   }
-});
+);
 
 const port = 3000;
 app.listen(port, () => {
