@@ -68,60 +68,71 @@ app.get("/oauth", async (req, res) => {
 
 app.post(
   "/upload",
-  uploadFile.fields([{ name: "videoFile" }, { name: "imgFile" }]),
+  uploadFile.fields([{ name: "videoFile" }, { name: "imgData" }]),
   async (req, res) => {
     const service = google.youtube({ version: "v3" });
-    console.log(req.file);
+    console.log(req.files);
+    const videoFile = req.files.videoFile[0].filename;
+    const thumbFilePath = req.files.imgData[0].filename;
     // console.log(req.body.access_token);
 
-    // const oauth2Client = new google.auth.OAuth2(
-    //   process.env.CLIENT_ID,
-    //   process.env.CLIENT_SECRET,
-    //   process.env.REDIRECT_URI
-    // );
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.CLIENT_ID,
+      process.env.CLIENT_SECRET,
+      process.env.REDIRECT_URI
+    );
 
-    // oauth2Client.setCredentials({
-    //   access_token: `${req.body.access_token}`,
-    // });
-    // console.log(oauth2Client);
+    oauth2Client.setCredentials({
+      access_token: `${req.body.access_token}`,
+    });
+    console.log("oauth2Client->", oauth2Client);
     if (file) {
       try {
-        // const resp = await service.videos.insert(
-        //   {
-        //     auth: oauth2Client,
-        //     part: "id,snippet,status",
-        //     notifySubscribers: false,
-        //     requestBody: {
-        //       snippet: {
-        //         title: `${req.body.title}`,
-        //         description: `${req.body.description}`,
-        //       },
-        //       status: {
-        //         privacyStatus: "private",
-        //       },
-        //     },
-        //     media: {
-        //       body: fs.createReadStream(`./uploads/${fileName}`),
-        //     },
-        //   },
-        //   function (err, response) {
-        //     if (err) {
-        //       console.log("The API returned an error: " + err);
-        //       return;
-        //     }
-        //     console.log(response.data);
-        //     console.log("Video uploaded. Uploading the thumbnail now.");
-        //     service.thumbnails.set({
-        //       auth: oauth2Client,
-        //       videoId: resp?.data?.id,
-        //       media: {
-        //         body: fs.createReadStream(thumbFilePath),
-        //       },
-        //     });
-        //   }
-        // );
-        // console.log("resp->", Object.keys(resp));
-        // console.log(auth);
+        const resp = await service.videos.insert(
+          {
+            auth: oauth2Client,
+            part: "id,snippet,status",
+            notifySubscribers: false,
+            requestBody: {
+              snippet: {
+                title: `${req.body.title}`,
+                description: `${req.body.description}`,
+              },
+              status: {
+                privacyStatus: "private",
+              },
+            },
+            media: {
+              body: fs.createReadStream(`./uploads/${videoFile}`),
+            },
+          },
+          function (err, response) {
+            if (err) {
+              console.log("The API returned an error: " + err);
+              return;
+            }
+            console.log(response.data);
+            console.log("Video uploaded. Uploading the thumbnail now.");
+            service.thumbnails.set(
+              {
+                auth: oauth2Client,
+                videoId: response?.data?.id,
+                media: {
+                  body: fs.createReadStream(thumbFilePath),
+                },
+              },
+              function (err, response) {
+                if (err) {
+                  console.log("The API returned an error: " + err);
+                  return;
+                }
+                console.log(response.data);
+              }
+            );
+          }
+        );
+        console.log("resp->", Object.keys(resp));
+        console.log(auth);
 
         // setTimeout(() => {
         //   fs.unlink(`./uploads/${fileName}`, (err) => {
