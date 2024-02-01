@@ -129,15 +129,19 @@ app.post(
       // console.log(auth);
 
       setTimeout(() => {
-        fs.unlink(`./uploads/${videoFile}`, (err) => {
-          if (err) throw new Error("something wasn't right");
-          console.log("File deleted successfully");
-        });
+        fs.unlink(
+          `./uploads/${videoFile}`,
+          (err) => {
+            if (err) throw new Error("something wasn't right");
+            console.log("File deleted successfully");
+          },
+          5000
+        );
         fs.unlink(`./uploads/${imgData}`, (err) => {
           if (err) throw new Error("something wasn't right");
           console.log("File deleted successfully");
         });
-      }, 3000);
+      }, 5000);
 
       return res.status(200).json({
         status: "success",
