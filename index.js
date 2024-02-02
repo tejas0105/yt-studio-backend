@@ -89,7 +89,7 @@ app.post(
     console.log(oauth2Client);
 
     try {
-      await service.videos.insert(
+      const resp = await service.videos.insert(
         {
           auth: oauth2Client,
           part: "id,snippet,status",
@@ -112,7 +112,8 @@ app.post(
             console.log("The API returned an error: " + err);
             return;
           }
-          console.log(response?.data);
+          // console.log("video response ->", response?.data);
+
           if (imgData) {
             console.log("Video uploaded. Uploading the thumbnail now.");
             service.thumbnails.set({
@@ -123,10 +124,17 @@ app.post(
               },
             });
           }
+          return res.status(200).json({
+            status: "success",
+            data: {
+              uploadStatus: response?.uploadStatus,
+            },
+          });
         }
       );
       // console.log("resp->", Object.keys(resp));
       // console.log(auth);
+      console.log("resp->", resp);
 
       setTimeout(() => {
         fs.unlink(
@@ -142,13 +150,6 @@ app.post(
           console.log("File deleted successfully");
         });
       }, 5000);
-
-      return res.status(200).json({
-        status: "success",
-        data: {
-          files: req.files,
-        },
-      });
     } catch (error) {
       console.log(error.message);
       return res
