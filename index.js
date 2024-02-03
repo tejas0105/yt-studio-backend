@@ -110,7 +110,10 @@ app.post(
         function (err, response) {
           if (err) {
             console.log("The API returned an error: " + err);
-            return;
+            return res.status(err.code).json({
+              status: "failed",
+              message: err,
+            });
           }
           // console.log("video response ->", response?.data);
 
