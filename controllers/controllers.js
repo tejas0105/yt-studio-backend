@@ -55,7 +55,6 @@ const oauth = async (req, res) => {
   try {
     const code = req.query.code;
     const { tokens } = await oauth2Client.getToken(code);
-    console.log(tokens);
     res.cookie("access_token", tokens.access_token, {
       expires: new Date(tokens.expiry_date),
     });
