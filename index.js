@@ -4,10 +4,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const multer = require("multer");
 const fs = require("fs");
-const youtube = require("youtube-api");
-const path = require("path");
 const { google } = require("googleapis");
-const { file } = require("googleapis/build/src/apis/file");
 
 const app = express();
 app.use(express.json());
