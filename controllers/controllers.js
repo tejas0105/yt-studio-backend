@@ -1,15 +1,8 @@
 const multer = require("multer");
+const dotenv = require("dotenv");
 const fs = require("fs");
 const { google } = require("googleapis");
-
-console.log({
-  credentials: {
-    clientId: process.env.CLIENT_ID,
-    clientSecret: process.env.CLIENT_SECRET,
-    redirectUri: process.env.REDIRECT_URI,
-    port: process.env.PORT,
-  },
-});
+dotenv.config({ path: "./.env" });
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.CLIENT_ID,
