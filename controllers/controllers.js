@@ -58,7 +58,10 @@ const oauth = async (req, res) => {
     res.cookie("access_token", tokens.access_token, {
       expires: new Date(tokens.expiry_date),
     });
+    res.cookie("refresh_token", tokens.refresh_token);
+    console.log(tokens);
     return res.redirect("http://localhost:5173/dashboard");
+    // return res.status(200).json({ expiryDate: `${tokens.expiry_date}` });
   } catch (error) {
     console.log(error.message);
     return res
@@ -152,4 +155,22 @@ const upload = async (req, res) => {
   }
 };
 
-module.exports = { request, oauth, upload, multiUpload };
+const refreshToken = async (req, res) => {
+  const refreshToken = req.body.refresh_token;
+  // const currentAccessToken = req.body.access_token;
+  console.log("refresh_token->", refreshToken);
+
+  try {
+    const resp = await fetch(
+      `https://oauth2.googleapis.com/token?client_id=${process.env.CLIENT_ID}&client_secret=${process.env.CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${refreshToken}`,
+      { method: "POST" }
+    );
+    const data = await resp.json();
+    res.cookie("access_token", data.access_token);
+    return res.redirect("http://localhost:5173/");
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+module.exports = { request, oauth, upload, multiUpload, refreshToken };
